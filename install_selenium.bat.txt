@@ -1,0 +1,75 @@
+@echo off 
+
+:REM This will install Selenium Server Node as a Windows Service
+
+set SERVICE_NAME=SeleniumServer
+set SERVER_VERSION=2.42.2
+set JAVA=%ProgramFiles%\Java\jre7\bin\java.exe
+set NSSM=C:\selenium\nssm-2.16\win64\nssm.exe 
+set SERVER_JAR=C:\selenium\selenium-server-standalone-2.42.2.jar
+set CONFIG=C:\selenium\node_config_windows.json
+set CHROME_DRIVER=C:\selenium\chromedriver.exe
+set CHROME=C:\Program Files (x86)\Google\Chrome\Application\chrome.exe
+set IE_DRIVER=C:\selenium\IEDriverServer.exe
+
+echo Checking Dependencies
+ 
+if not exist "%NSSM%" (
+echo.
+echo Could not find "%NSSM%!
+echo.
+echo Please download at http://nssm.cc/
+echo.
+pause
+exit /B 1
+)
+if not exist "%JAVA%" (
+echo.
+echo Could not find "%JAVA%!
+echo.
+pause
+exit /B 1
+)
+if not exist "%SERVER_JAR%" (
+echo.
+echo Could not find "%SERVER_JAR%"!
+echo.
+pause
+exit /B 1
+)
+if not exist "%CHROME_DRIVER%" (
+echo.
+echo Could not find "%CHROME_DRIVER%"!
+echo.
+pause
+exit /B 1
+)
+if not exist "%IE_DRIVER%" (
+echo.
+echo Could not find "%IE_DRIVER%"!
+echo.
+pause
+exit /B 1
+)
+
+echo Dependencies Met
+
+echo Stopping service "%SERVICE_NAME%"
+sc stop "%SERVICE_NAME%" >NUL 2>NUL
+ 
+echo Trying to remove possibly pre-existing service "%SERVICE_NAME%"...
+"%NSSM%" remove "%SERVICE_NAME%" confirm > NUL 2>NUL
+echo Installing as Service:
+echo * Selenium Server: Version %SERVER_VERSION%
+echo.
+ 
+"%NSSM%" install "%SERVICE_NAME%" "%JAVA%" -jar ""%SERVER_JAR%"" -role node -nodeConfig ""%CONFIG%"" -Dwebdriver.chrome.driver=""%CHROME_DRIVER%"" -Dwebdriver.chrome.binary=""%CHROME%"" -Dwebdriver.ie.driver=""%IE_DRIVER%"" -trustAllSSLCertificates -log C:\selenium\selenium.log
+ 
+if not errorlevel 1 (
+echo.
+echo Starting Selenium Server
+echo.
+sc start "%SERVICE_NAME%"
+)
+pause
+exit /b
